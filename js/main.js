@@ -24,6 +24,7 @@
       state = { todos: [], input: "", currentId: 1, view: view };
     }
 
+    //populate DOM
     var tree = render(state);
     var rootNode = createElement(tree);
     document.body.appendChild(rootNode);
@@ -47,59 +48,70 @@
 
       while (eventQueue.length > 0) {
         var ev = eventQueue.pop();
-        if (ev.type === "keydown") {
-          if (ev.target.id === "todo-input") {
-            if (ev.key === "Enter") {
-              var text = ev.target.value.trim();
-              if (text.length > 0) {
-                state.todos.push({
-                  text: text,
-                  completed: false,
-                  editing: false,
-                  id: state.currentId
-                });
-                state.currentId++;
-                state.input = "";
+        switch (ev.type) {
+
+          case "keydown":
+            if (ev.target.id === "todo-input") {
+              if (ev.key === "Enter") {
+                var text = ev.target.value.trim();
+                if (text.length > 0) {
+                  state.todos.push({
+                    text: text,
+                    completed: false,
+                    editing: false,
+                    id: state.currentId
+                  });
+                  state.currentId++;
+                  state.input = "";
+                }
+              } else {
+                state.input = ev.target.value;
               }
-            } else {
-              state.input = ev.target.value;
+            } else if (ev.target.className === "edit") {
+              if (ev.key === "Enter") {
+                var edit = _.find(state.todos, function(t) { return t.editing });
+                endEdit(edit);
+              } else {
+                var todo = findTodo(ev.target);
+                todo.text = ev.target.value;
+              }
             }
-          } else if (ev.target.className === "edit") {
-            if (ev.key === "Enter") {
-              var edit = _.find(state.todos, function(t) { return t.editing });
+            break;
+
+          case "click":
+            var id = parseInt(parseInt(ev.target.dataset.id));
+            var edit = _.find(state.todos, function(t) { return t.editing });
+
+            //cancel edit when you click anywhere except on the item you're editing
+            if (edit
+                && !(ev.target.className === "todo-label" && id === edit.id)
+                && !(ev.target.className === "edit" && id === edit.id))
+            {
               endEdit(edit);
-            } else {
-              var todo = findTodo(ev.target);
-              todo.text = ev.target.value;
             }
-          }
-        } else if (ev.type === "click") {
-          var idStr = ev.target.dataset.id;
-          var id = parseInt(idStr);
-          var edit = _.find(state.todos, function(t) { return t.editing });
-          if (edit
-              && !(ev.target.className === "todo-label" && id === edit.id)
-              && !(ev.target.className === "edit" && id === edit.id))
-          {
-            endEdit(edit);
-          }
-          if (ev.target.className === "destroy") {
-            state.todos = _.reject(state.todos, function(t) { return t.id === id });
-          } else if (ev.target.className === "toggle") {
-            var todo = findTodo(ev.target);
-            todo.completed = ev.target.checked;
-          } else if (ev.target.className === "toggle-all") {
-            var checked = ev.target.checked;
-            _.each(state.todos, function(t) { t.completed = checked; });
-          }
-        } else if (ev.type === "dblclick") {
-          if (_.contains(ev.target.className.split(" "), "todo-label")) {
-            var todo = findTodo(ev.target);
-            todo.editing = true;
-          }
-        } else if (ev.type === "hashchange") {
-          var url = ev.newURL.split("#")[1];
-          state.view = url;
+
+            if (ev.target.className === "destroy") {
+              state.todos = _.reject(state.todos, function(t) { return t.id === id });
+            } else if (ev.target.className === "toggle") {
+              var todo = findTodo(ev.target);
+              todo.completed = ev.target.checked;
+            } else if (ev.target.className === "toggle-all") {
+              var checked = ev.target.checked;
+              _.each(state.todos, function(t) { t.completed = checked; });
+            }
+            break;
+
+          case "dblclick":
+            if (_.contains(ev.target.className.split(" "), "todo-label")) {
+              var todo = findTodo(ev.target);
+              todo.editing = true;
+            }
+            break;
+
+          case "hashchange":
+            var url = ev.newURL.split("#")[1];
+            state.view = url;
+            break;
         }
       }
 
