@@ -31,7 +31,7 @@
 
     function update() {
       function findTodo(target) {
-        var id = parseInt(ev.target.dataset.id);
+        var id = parseInt(target.dataset.id);
         return _.find(state.todos, function(t) { return t.id === id });
       }
 
@@ -52,7 +52,7 @@
 
           case "keydown":
             if (ev.target.id === "todo-input") {
-              if (ev.key === "Enter") {
+              if (ev.key === "Enter" || ev.keyIdentifier === "Enter") {
                 var text = ev.target.value.trim();
                 if (text.length > 0) {
                   state.todos.push({
@@ -68,7 +68,7 @@
                 state.input = ev.target.value;
               }
             } else if (ev.target.className === "edit") {
-              if (ev.key === "Enter") {
+              if (ev.key === "Enter" || ev.keyIdentifier === "Enter") {
                 var edit = _.find(state.todos, function(t) { return t.editing });
                 endEdit(edit);
               } else {
