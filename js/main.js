@@ -16,12 +16,11 @@
     var view = window.location.hash.split("#")[1] || "/";
 
     var stored = JSON.parse(localStorage.getItem('state'));
-    var state;
     if (stored) {
-      state = stored;
+      var state = stored;
       state.view = view;
     } else {
-      state = { todos: [], input: "", currentId: 1, view: view };
+      var state = { todos: [], input: "", currentId: 1, view: view };
     }
 
     //populate DOM
